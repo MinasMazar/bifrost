@@ -1,0 +1,14 @@
+#!/usr/bin/ruby
+require 'thor'
+
+class BifrostCLI < Thor
+
+  desc "convert videos", "Convert video with ffmpeg"
+  def videoc(*files)
+    files.each do |f|
+      `ffmpeg -i \"#{f}\" -vn \"#{f}.mp3\"`
+    end
+  end
+end
+
+BifrostCLI.start ARGV
