@@ -3,11 +3,54 @@ require 'thor'
 
 class BifrostCLI < Thor
 
-  desc "convert videos", "Convert video with ffmpeg"
-  def videoc(*files)
-    files.each do |f|
-      `ffmpeg -i \"#{f}\" -vn \"#{f}.mp3\"`
+  @@name, @@email, @@editor = [ 'MinasMazar', 'minasmazar@gmail.com', 'vim' ]
+  GIT_SHORTCUTS = {
+    :co  => :checkout,
+    :cm  => :commit,
+    :b   => :branch, 
+    :l   => :log,
+    :r   => :reset, 
+    :rb  => :rebase
+  }
+
+  class_option  :stdout, :type => :boolean
+
+  desc "git_conf! <name> <email>", "Generate git globals configurations and shortcuts"
+  option :name
+  option :email
+  option :editor
+  def git_conf!
+    cmd_list = []
+    GIT_SHORTCUTS.each do |sc, cmd|
+      cmd_list << "git config --global alias.#{sc} #{cmd}"
     end
+    cmd_list << "git config --global user.name #{options[:name] || @@name}"
+    cmd_list << "git config --global user.email #{options[:email] || @@email}"
+    cmd_list << "git config --global core.editor #{options[:editor] || @@editor}"
+    exec_cmds cmd_list unless only_stdout?
+    puts cmd_list
+  end
+  
+  desc "vid2mp3 <files>", "Convert video to mp3 with ffmpeg"
+  def vid2mp3(*files)
+    cmd_list = []
+    files.each do |f|
+      cmd_list << "ffmpeg -i \"#{f}\" -vn \"#{f}.mp3\""
+    end
+    exec_cmds cmd_list unless only_stdout?
+    puts cmd_list
+  end
+
+
+  private
+  no_commands do
+    def only_stdout?
+      options[:stdout]
+    end
+  end
+  def exec_cmds(cmds)
+    cmds = [ cmds ] if cmds.is_a? String
+    cmds.map { |cmd| `#{cmd}` }
   end
 end
 
