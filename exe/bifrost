@@ -41,6 +41,12 @@ class BifrostCLI < Thor
     puts cmd_list
   end
 
+  desc "middleman article <article-title>", "Create new middleman article"
+  def middleman(action, title, blog = 'blog')
+    if action == "article"
+      `bundle exec middleman article -b #{blog} #{title}`
+    end
+  end
 
   private
   no_commands do
