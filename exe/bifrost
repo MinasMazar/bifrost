@@ -3,7 +3,6 @@ require 'thor'
 
 class BifrostCLI < Thor
 
-  @@name, @@email, @@editor = [ 'MinasMazar', 'minasmazar@gmail.com', 'vim' ]
   GIT_SHORTCUTS = {
     :co  => :checkout,
     :cm  => :commit,
@@ -13,21 +12,17 @@ class BifrostCLI < Thor
     :rb  => :rebase
   }
 
-  class_option  :stdout, :type => :boolean
-
-  desc "git_conf! <name> <email>", "Generate git globals configurations and shortcuts"
-  option :name
-  option :email
-  option :editor
-  def git_conf!
+  desc "git_conf! <name> <email> <favourite-editor>", "Generate git globals configurations and shortcuts."
+  option :only_stdout
+  def git_conf!(name, email, editor)
     cmd_list = []
     GIT_SHORTCUTS.each do |sc, cmd|
       cmd_list << "git config --global alias.#{sc} #{cmd}"
     end
-    cmd_list << "git config --global user.name #{options[:name] || @@name}"
-    cmd_list << "git config --global user.email #{options[:email] || @@email}"
-    cmd_list << "git config --global core.editor #{options[:editor] || @@editor}"
-    exec_cmds cmd_list unless only_stdout?
+    cmd_list << "git config --global user.name #{name}"
+    cmd_list << "git config --global user.email #{email}"
+    cmd_list << "git config --global core.editor #{editor}"
+    exec_cmds cmd_list unless options[:only_stdout]
     puts cmd_list
   end
   
@@ -41,19 +36,27 @@ class BifrostCLI < Thor
     puts cmd_list
   end
 
-  desc "middleman article <article-title>", "Create new middleman article"
-  def middleman(action, title, blog = 'blog')
+  desc "middleman article [--blog BLOGNAME(def. 'blog')] <article-title>", "Create new middleman article"
+  option :blog
+  def middleman(action, *args)
+    blog = options[:blog] || "blog"
     if action == "article"
+      title = args[0]
       `bundle exec middleman article -b #{blog} #{title}`
+    else
+      raise "No action defined: #{action}"
     end
   end
 
+  desc "i3msg <action> <params>", "Wrapparound i3msg executable (http://i3wm.org)"
+  def i3msg(action)
+    puts `i3-msg mark #{action}`
+    puts `i3-msg [con_mark="#{action}"] focus`
+    puts `i3-msg unmark #{action}`   
+  end  
+
   private
-  no_commands do
-    def only_stdout?
-      options[:stdout]
-    end
-  end
+
   def exec_cmds(cmds)
     cmds = [ cmds ] if cmds.is_a? String
     cmds.map { |cmd| `#{cmd}` }
