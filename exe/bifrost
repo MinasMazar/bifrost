@@ -8,7 +8,8 @@ class BifrostCLI < Thor
     :cm  => :commit,
     :b   => :branch, 
     :l   => :log,
-    :r   => :reset, 
+    :r   => :reset,
+    :s   => :status,
     :rb  => :rebase
   }
 
