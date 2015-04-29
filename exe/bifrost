@@ -9,7 +9,7 @@ class BifrostCLI < Thor
     :b   => :branch, 
     :l   => :log,
     :r   => :reset,
-    :s   => :status
+    :s   => :status,
     :rb  => :rebase
   }
 
