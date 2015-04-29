@@ -49,13 +49,6 @@ class BifrostCLI < Thor
     end
   end
 
-  desc "i3msg <action> <params>", "Wrapparound i3msg executable (http://i3wm.org)"
-  def i3msg(action)
-    puts `i3-msg mark #{action}`
-    puts `i3-msg [con_mark="#{action}"] focus`
-    puts `i3-msg unmark #{action}`   
-  end  
-
   private
 
   def exec_cmds(cmds)
