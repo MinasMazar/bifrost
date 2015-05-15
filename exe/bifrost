@@ -3,6 +3,8 @@ require 'thor'
 
 class BifrostCLI < Thor
 
+  class_option :only_stdout
+
   GIT_SHORTCUTS = {
     :co  => :checkout,
     :cm  => :commit,
@@ -14,7 +16,6 @@ class BifrostCLI < Thor
   }
 
   desc "git_conf! <name> <email> <favourite-editor>", "Generate git globals configurations and shortcuts."
-  option :only_stdout
   def git_conf!(name, email, editor)
     cmd_list = []
     GIT_SHORTCUTS.each do |sc, cmd|
@@ -30,10 +31,11 @@ class BifrostCLI < Thor
   desc "vid2mp3 <files>", "Convert video to mp3 with ffmpeg"
   def vid2mp3(*files)
     cmd_list = []
+    vid_converter = select_executable [ "ffmpeg -i", "avconv -i"]
     files.each do |f|
-      cmd_list << "ffmpeg -i \"#{f}\" -vn \"#{f}.mp3\""
+      cmd_list << "#{vid_converter} \"#{f}\" -vn \"#{f}.mp3\""
     end
-    exec_cmds cmd_list unless only_stdout?
+    exec_cmds cmd_list unless options[:only_stdout]
     puts cmd_list
   end
 
@@ -55,6 +57,15 @@ class BifrostCLI < Thor
     cmds = [ cmds ] if cmds.is_a? String
     cmds.map { |cmd| `#{cmd}` }
   end
+
+  def select_executable(cmds)
+    cmds.find { |c| check_executable c }
+  end
+
+  def check_executable(cmd)
+    system(cmd) != nil ? cmd : false
+  end
+
 end
 
 BifrostCLI.start ARGV
