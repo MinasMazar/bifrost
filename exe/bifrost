@@ -1,7 +1,11 @@
 #!/usr/bin/ruby
 require 'thor'
+require 'bifrost'
+require 'pry'
 
 class BifrostCLI < Thor
+
+  include Bifrost
 
   class_option :only_stdout
 
@@ -24,7 +28,7 @@ class BifrostCLI < Thor
     cmd_list << "git config --global user.name #{name}"
     cmd_list << "git config --global user.email #{email}"
     cmd_list << "git config --global core.editor #{editor}"
-    exec_cmds cmd_list unless options[:only_stdout]
+    system_exec_and_get_output cmd_list unless options[:only_stdout]
     puts cmd_list
   end
   
@@ -45,25 +49,17 @@ class BifrostCLI < Thor
     blog = options[:blog] || "blog"
     if action == "article"
       title = args[0]
-      `bundle exec middleman article -b #{blog} #{title}`
+      middleman_ret = system_exec_and_get_output "bundle exec middleman article -b #{blog} #{title}"
+      middleman_ret = middleman_ret[0]
+      if middleman_ret =~ /[create|update|identical|\w+]\s+(.+)/
+        article_dir = $1.strip.split(".")[0]
+        system_exec "mkdir #{article_dir}"
+      else
+        $logger.error "Cannot create data directory for article. Middleman returned\n #{middleman_ret}"
+      end
     else
       raise "No action defined: #{action}"
     end
-  end
-
-  private
-
-  def exec_cmds(cmds)
-    cmds = [ cmds ] if cmds.is_a? String
-    cmds.map { |cmd| `#{cmd}` }
-  end
-
-  def select_executable(cmds)
-    cmds.find { |c| check_executable c }
-  end
-
-  def check_executable(cmd)
-    system(cmd) != nil ? cmd : false
   end
 
 end
