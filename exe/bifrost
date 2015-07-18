@@ -43,6 +43,11 @@ class BifrostCLI < Thor
     puts cmd_list
   end
 
+  desc "youtube-dl <url>", "Go to your ~/Scaricati and start video download"
+  def ytdl(url)
+    exec_cmds "cd ~/Scaricati; youtube-dl #{url}"
+  end
+
   desc "middleman article [--blog BLOGNAME(def. 'blog')] <article-title>", "Create new middleman article"
   option :blog
   def middleman(action, *args)
@@ -52,7 +57,8 @@ class BifrostCLI < Thor
       middleman_ret = system_exec_and_get_output "bundle exec middleman article -b #{blog} #{title}"
       middleman_ret = middleman_ret[0]
       if middleman_ret =~ /[create|update|identical|\w+]\s+(.+)/
-        article_dir = $1.strip.split(".")[0]
+        binding.pry
+        article_dir = $1.strip.split(File.separator)[-1].split(".")[0]
         system_exec "mkdir #{article_dir}"
       else
         $logger.error "Cannot create data directory for article. Middleman returned\n #{middleman_ret}"
