@@ -39,13 +39,13 @@ class BifrostCLI < Thor
     files.each do |f|
       cmd_list << "#{vid_converter} \"#{f}\" -vn \"#{f}.mp3\""
     end
-    exec_cmds cmd_list unless options[:only_stdout]
+    system_exec cmd_list unless options[:only_stdout]
     puts cmd_list
   end
 
   desc "youtube-dl <url>", "Go to your ~/Scaricati and start video download"
   def ytdl(url)
-    exec_cmds "cd ~/Scaricati; youtube-dl #{url}"
+    system_exec "cd ~/Scaricati; youtube-dl #{url}"
   end
 
   desc "middleman article [--blog BLOGNAME(def. 'blog')] <article-title>", "Create new middleman article"
@@ -68,6 +68,10 @@ class BifrostCLI < Thor
     end
   end
 
+  desc "pry", "Start Bifrost pry shell"
+  def pry
+    binding.pry
+  end
 end
 
 BifrostCLI.start ARGV
