@@ -2,17 +2,25 @@ defmodule Bifrost do
   @moduledoc """
   Documentation for `Bifrost`.
   """
+  require Logger
 
-  @doc """
-  Hello world.
+  def subscribe do
+    Registry.register(Bifrost.Registry, "consumer", :consumer)
+  end
 
-  ## Examples
+  def get_message do
+    receive do
+      {:message, message} -> message
+    end
+  end
 
-      iex> Bifrost.hello()
-      :world
-
-  """
-  def hello do
-    :world
+  def send_message(message) do
+    Registry.dispatch(Bifrost.Registry, "socket_handler", fn entries ->
+      for {pid, mode} <- entries do
+        Logger.debug("a subscribed is #{inspect mode}")
+        Logger.debug("Sending message to emacs #{message}")
+        send(pid, {:send_to_emacs, message})
+      end
+    end)
   end
 end
